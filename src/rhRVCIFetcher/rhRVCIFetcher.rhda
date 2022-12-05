@@ -1,0 +1,55 @@
+rhload 'basicFeatures.rhda' ## rhload should support loading .rhda
+component 'RhRVCIFetcher_arbitor' do |*opts| ##{{{
+	descp <<-DOC
+		The block will arbitrate the incoming request of change PC
+	DOC
+
+
+	type :block
+	a0 = 'arbitorVld_w'
+	a1 = 'grantedVldOnehot_w'
+	f_concat 3,opts[0],opts[1],opts[2],a0
+	f_hightolowPArbitor 3,a0,a1
+	f_combineMux3 opts[3],opts[4],opts[5],opts[6] do
+		config "grantedPC_w==3'b001"
+		config "grantedPC_w==3'b010"
+	end
+	f_bitor1 opts[7],a1
+end ##}}}
+
+component 'RhRVCIFetcher_internalPCR' do |*opts| ##{{{
+	type :block
+	## TODO
+end ##}}}
+component 'RhRVCIFetcher_reqIssuer' do |*opts| ##{{{
+	type :block
+	descp <<-DOC
+		This is a block of request issuer to ICache, the issuer will
+		give ICache a reqVld, reqPC, and the ICache will give a reqReady
+		signal, once the reqReady is low, then the issuer should wait
+		for the reqReady high again before issueing next request.
+	DOC
+end ##}}}
+
+component 'RhRVCIFetcher' do |*opts| ##{{{
+	type :vmod
+
+	ipcv= 'internalPCR_vld_w'
+	ipc = 'internalPCR_PC_w'
+	gpc = 'grantedPC_w'
+	gvld= 'grantedVld_w'
+
+	RhRVCIFetcher_arbitor(
+		ipcv,
+		ipc
+	)
+
+	RhRVCIFetcher_internalPCR(
+		gpc,
+		ipcv,ipc
+	)
+
+	RhRVCIFetcher_reqIssuer(
+	)
+
+end ##}}}
