@@ -1,0 +1,29 @@
+vmodule 'rhRVCIFetcher_arbitor #(PCW=32)' do
+
+	port 'intrPCR_vld_i','[PCW-1:0] intrPCR_pc_i'
+	port 'execPCR_vld_i','[PCW-1:0] execPCR_pc_i'
+	port 'grantedPCR_ack_i','grantedPCR_vld_o','[PCW-1:0] grantedPCR_pc_o'
+
+
+	block do
+		verilog "cbufferWithClear#(PCW) ubuf0 ("
+		verilog "\t.clear_i(grantedPCR_ack_i),"
+		verilog "\t.en_i(intrPCR_vld_i),"
+		verilog "\t.d_i(intrPCR_pc_i),"
+		verilog "\t.en_o(intrPCR_vld_w),"
+		verilog "\t.d_o(intrPCR_pc_w)"
+		verilog ")"
+	end
+
+	block do
+
+		verilog "// instances of arbitor"
+		verilog "fixedCombArbitor3 uarb("
+		verilog "\t.vld0_i(),"
+		verilog "\t.dat0_i(),"
+		verilog ")"
+
+	end
+
+
+end
